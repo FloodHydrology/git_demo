@@ -37,23 +37,20 @@ baro<-baro %>%
   mutate(Timestamp = as.POSIXct(Timestamp, format = "%m/%d/%Y %H:%M"))
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Step 2: Estiamte water level -------------------------------------------------
+#Step 2: Estimate water level---------------------------------------------------
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#Create function to interp baro data
+#Create function to interpolate baro data
 baro<-na.omit(baro)
 baro_fun<-approxfun(baro$Timestamp, baro$press_kPa)
 
-#Estimate pressure head
+#Add baro pressure to wetland
 df<-wetland %>% 
   #Interpolate atm pressure
   mutate(p_atm = baro_fun(Timestamp)) %>% 
-  #estimate pressure of water collumn
-  mutate(p_water = press_kPa - p_atm) %>% 
-  #estiamte pressure head
-  mutate(waterDepth = p_water/9.81)
-
-#plot
-plot(df$Timestamp, df$waterDepth)
+  #Estimate water pressure
+  mutate(p_h20 = press_kPa - p_atm) %>% 
+  #Estimate pressure head
+  mutate(waterDepth = p_h20/9.81)
 
 #Create dygraph
 #format data
@@ -73,3 +70,4 @@ h<-dygraph(df_xts) %>%
   dyAxis("y", label = "Variable") 
 
 saveWidget(h, file="hydrograph.html")
+  
